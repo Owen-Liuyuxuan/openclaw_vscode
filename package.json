@@ -1,12 +1,14 @@
 {
   "name": "openclaw-vscode",
-  "displayName": "OpenClaw",
+  "displayName": "OpenClaw-VSCode",
   "description": "AI-powered coding assistant integration for OpenClaw",
   "version": "0.1.0",
-  "publisher": "openclaw",
+  "publisher": "OwenLiuyuxuan",
+  "icon": "resources/icon.png",
   "engines": {
     "vscode": "^1.85.0"
   },
+  "repository": "https://github.com/Owen-Liuyuxuan/openclaw_vscode",
   "categories": [
     "Other"
   ],

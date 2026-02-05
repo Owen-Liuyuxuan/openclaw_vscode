@@ -4,10 +4,9 @@ AI-powered coding assistant integration for OpenClaw. This extension connects VS
 
 ## Features
 
-- **Chat Interface**: Interactive chat panel to communicate with OpenClaw
-- **Context Awareness**: Automatically sends workspace and file context
-- **File Path Shortcut**: Press `Ctrl+Shift+O` (or `Cmd+Shift+O` on Mac) to send current file context
-- **Secure Tool Execution**: Execute file operations, terminal commands, and Git operations with user confirmation
+- **Chat Interface**: Sidebar chat to communicate with OpenClaw
+- **Context Awareness**: Adds a hidden system prompt with workspace path context
+- **Markdown Rendering**: Renders assistant responses in Markdown
 - **Auto-Reconnection**: Automatically reconnects to Gateway if connection is lost
 
 ## Requirements
@@ -34,12 +33,12 @@ AI-powered coding assistant integration for OpenClaw. This extension connects VS
 - Command Palette: `OpenClaw: Open Chat`
 - Or use the command `openclaw.openChat`
 
-### Send File Context
-- Press `Ctrl+Shift+O` (or `Cmd+Shift+O` on Mac) while editing a file
-- This sends the current file path and any selected code to OpenClaw
+### File Context
+- **Drag-and-drop** files from VS Code into the chat input to insert full paths.
+  - Multiple files are inserted on separate lines.
 
 ### Tool Execution
-When OpenClaw requests to perform operations (file edits, terminal commands, etc.), you'll receive a confirmation dialog. Review the operation details and choose to Allow or Deny.
+This is currently not exposed in the UI.
 
 ## Architecture
 
