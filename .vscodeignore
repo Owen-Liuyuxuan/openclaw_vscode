@@ -1,0 +1,14 @@
+.vscode/**
+.git
+.gitignore
+.agents
+node_modules
+!node_modules/markdown-it/**
+!node_modules/markdown-it/dist/**
+src
+tsconfig.json
+build.js
+*.map
+README.md
+IMPLEMENTATION.md
+quickstart.sh

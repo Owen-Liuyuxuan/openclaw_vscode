@@ -1,0 +1,120 @@
+# OpenClaw VSCode Extension
+
+AI-powered coding assistant integration for OpenClaw. This extension connects VSCode to your local OpenClaw Gateway service via WebSocket.
+
+## Features
+
+- **Chat Interface**: Interactive chat panel to communicate with OpenClaw
+- **Context Awareness**: Automatically sends workspace and file context
+- **File Path Shortcut**: Press `Ctrl+Shift+O` (or `Cmd+Shift+O` on Mac) to send current file context
+- **Secure Tool Execution**: Execute file operations, terminal commands, and Git operations with user confirmation
+- **Auto-Reconnection**: Automatically reconnects to Gateway if connection is lost
+
+## Requirements
+
+- OpenClaw Gateway must be running on `ws://127.0.0.1:18789`
+- VSCode 1.85.0 or higher
+
+## Installation
+
+1. Clone this repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Build the extension:
+   ```bash
+   npm run build
+   ```
+4. Press `F5` in VSCode to launch the extension in debug mode
+
+## Usage
+
+### Open Chat Panel
+- Command Palette: `OpenClaw: Open Chat`
+- Or use the command `openclaw.openChat`
+
+### Send File Context
+- Press `Ctrl+Shift+O` (or `Cmd+Shift+O` on Mac) while editing a file
+- This sends the current file path and any selected code to OpenClaw
+
+### Tool Execution
+When OpenClaw requests to perform operations (file edits, terminal commands, etc.), you'll receive a confirmation dialog. Review the operation details and choose to Allow or Deny.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────┐
+│         VSCode Extension                │
+│  ┌────────────┐      ┌──────────────┐  │
+│  │ Chat UI    │      │ Context      │  │
+│  │ (Webview)  │      │ Tracker      │  │
+│  └─────┬──────┘      └──────┬───────┘  │
+│        │                    │           │
+│        └────────┬───────────┘           │
+│                 │ WebSocket             │
+└─────────────────┼─────────────────────┘
+                  │
+         ┌────────▼────────┐
+         │  Gateway :18789 │  ← OpenClaw Core
+         │  (TypeScript)   │
+         └────────┬────────┘
+                  │
+    ┌─────────────┼─────────────┐
+    │             │             │
+┌───▼───┐   ┌────▼────┐   ┌───▼────┐
+│ Agent │   │ Skills  │   │ Memory │
+│Runner │   │ (Tools) │   │ Store  │
+└───────┘   └─────────┘   └────────┘
+```
+
+## Project Structure
+
+```
+openclaw-vscode/
+├── src/
+│   ├── extension.ts                 # Entry point
+│   ├── gateway/
+│   │   └── connection.ts           # WebSocket manager
+│   ├── ui/
+│   │   └── chatPanel.ts            # Webview panel
+│   ├── context/
+│   │   └── workspaceTracker.ts     # Context tracking
+│   ├── tools/
+│   │   └── toolBridge.ts           # Tool execution
+│   ├── commands/
+│   │   └── sendFilePath.ts         # File path command
+│   └── types/
+│       └── openclaw.d.ts           # Type definitions
+├── package.json
+├── tsconfig.json
+└── build.js                        # esbuild configuration
+```
+
+## Security
+
+- All file operations are validated to be within the workspace
+- Destructive operations require user confirmation
+- Path traversal attacks are prevented
+- No arbitrary code execution
+
+## Development
+
+### Build
+```bash
+npm run build;
+vsce package;
+code --install-extension openclaw-vscode-*
+```
+
+### Watch Mode
+```bash
+npm run watch
+```
+
+### Debug
+Press `F5` in VSCode to launch the Extension Development Host
+
+## License
+
+MIT
