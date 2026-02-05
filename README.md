@@ -16,6 +16,12 @@ AI-powered coding assistant integration for OpenClaw. This extension connects VS
 
 ## Installation
 
+### One-click Installation (Recommended)
+```bash
+curl -s https://raw.githubusercontent.com/Owen-Liuyuxuan/openclaw_vscode/main/install.sh | bash
+```
+
+### Manual Installation
 1. Clone this repository
 2. Install dependencies:
    ```bash
@@ -26,6 +32,10 @@ AI-powered coding assistant integration for OpenClaw. This extension connects VS
    npm run build
    ```
 4. Press `F5` in VSCode to launch the extension in debug mode
+
+### From VSIX File
+1. Download the latest `.vsix` file from [Releases](https://github.com/Owen-Liuyuxuan/openclaw_vscode/releases)
+2. In VSCode: View → Command Palette → 'Extensions: Install from VSIX'
 
 ## Usage
 
