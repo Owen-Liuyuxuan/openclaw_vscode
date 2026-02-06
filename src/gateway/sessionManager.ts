@@ -34,21 +34,37 @@ export class SessionManager extends EventEmitter {
             // Use the default session key if we don't have one yet
             this.currentSessionKey = this.DEFAULT_SESSION_KEY;
             this.logger.info(`Using default session key: ${this.currentSessionKey}`);
+            
+            // Try to set verbose level for this session
+            await this.setSessionVerboseLevel('on');
         }
         return this.currentSessionKey;
+    }
+    
+    /**
+     * Set verbose level for the current session
+     */
+    async setSessionVerboseLevel(level: 'on' | 'off' | 'full'): Promise<void> {
+        if (!this.currentSessionKey) {
+            return;
+        }
+        
+        try {
+            await this.gateway.sendRequest('sessions.patch', {
+                key: this.currentSessionKey,
+                verboseLevel: level
+            });
+            this.logger.info(`Set session verboseLevel to "${level}"`);
+        } catch (error) {
+            this.logger.warn(`Failed to set verboseLevel to "${level}"`, error);
+        }
     }
 
     /**
      * Send a chat message
      */
     async sendChatMessage(message: string, context?: any): Promise<any> {
-        // #region agent log
-        this.logger.debug('[DEBUG] sendChatMessage entry', {messageLength: message.length, hasContext: !!context});
-        // #endregion
         await this.ensureSession();
-        // #region agent log
-        this.logger.debug('[DEBUG] After ensureSession', {sessionKey: this.currentSessionKey});
-        // #endregion
 
         try {
             const workspacePath = context?.workspace || 'unknown';
@@ -65,11 +81,18 @@ export class SessionManager extends EventEmitter {
                 messageLength: message.length 
             });
             
-            // Use the agent method directly to send messages
-            // Note: Gateway does not accept 'context' property, only 'message' and 'idempotencyKey'
-            // #region agent log
-            this.logger.debug('[DEBUG] Before gateway.sendRequest', {method: 'agent', sessionKey: this.currentSessionKey});
-            // #endregion
+            // FIRST: Set verboseLevel on the session to see tool events
+            try {
+                await this.gateway.sendRequest('sessions.patch', {
+                    key: this.currentSessionKey!,
+                    verboseLevel: 'on'
+                });
+                this.logger.debug('Set verboseLevel to "on" for session');
+            } catch (patchError) {
+                this.logger.warn('Failed to set verboseLevel, tool events may not be visible', patchError);
+            }
+            
+            // THEN: Send the agent message
             const result = await this.gateway.sendRequest(
                 'agent',
                 {
@@ -79,15 +102,9 @@ export class SessionManager extends EventEmitter {
                 },
                 { idleTimeoutMs: 15000 }
             );
-            // #region agent log
-            this.logger.debug('[DEBUG] After gateway.sendRequest', {resultExists: !!result});
-            // #endregion
 
             return result;
         } catch (error) {
-            // #region agent log
-            this.logger.error('[DEBUG] sendChatMessage error', {errorMessage: (error as any).message, errorStack: (error as any).stack});
-            // #endregion
             this.logger.error('Failed to send chat message', error);
             throw error;
         }

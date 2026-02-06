@@ -2,7 +2,7 @@
   "name": "openclaw-vscode",
   "displayName": "OpenClaw-VSCode",
   "description": "AI-powered coding assistant integration for OpenClaw",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "OwenLiuyuxuan",
   "icon": "resources/icon.png",
   "engines": {
@@ -22,7 +22,7 @@
         {
           "id": "openclaw-explorer",
           "title": "OpenClaw",
-          "icon": "$(comment-discussion)"
+          "icon": "resources/icon.svg"
         }
       ]
     },
@@ -32,39 +32,29 @@
           "type": "webview",
           "id": "openclaw.chatView",
           "name": "Chat",
-          "icon": "$(comment-discussion)"
+          "icon": "resources/icon.svg"
         }
       ]
     },
     "commands": [
       {
         "command": "openclaw.openChat",
-        "title": "OpenClaw: Open Chat",
-        "icon": "$(comment-discussion)"
+        "title": "OpenClaw: Open Chat Panel",
+        "icon": "resources/icon.svg"
       },
       {
-        "command": "openclaw.sendFilePath",
-        "title": "OpenClaw: Send Current File Path",
-        "icon": "$(file-code)"
-      },
-      {
-        "command": "openclaw.checkConnection",
-        "title": "OpenClaw: Check Connection Status",
-        "icon": "$(debug-disconnect)"
+        "command": "openclaw.openChatSidePanel",
+        "title": "OpenClaw: Open Chat Side Panel",
+        "icon": "resources/icon.svg"
       },
       {
         "command": "openclaw.showLogs",
         "title": "OpenClaw: Show Logs",
-        "icon": "$(output)"
+        "icon": "resources/icon.svg"
       }
     ],
     "keybindings": [
-      {
-        "command": "openclaw.sendFilePath",
-        "key": "ctrl+shift+o",
-        "mac": "cmd+shift+o",
-        "when": "editorTextFocus"
-      }
+      
     ],
     "menus": {
       "editor/context": []

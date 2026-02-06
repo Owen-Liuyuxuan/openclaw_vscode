@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { SessionManager } from '../gateway/sessionManager';
 import { Logger } from '../utils/logger';
+import { ToolEventHandler } from './toolEventHandler';
 
 export class ChatPanel {
   private panel: vscode.WebviewPanel | undefined;
@@ -16,10 +17,6 @@ export class ChatPanel {
   }
 
   public show(): void {
-    // #region agent log
-    const logger = Logger.getInstance();
-    logger.debug('[DEBUG] ChatPanel.show() called', {panelExists: !!this.panel});
-    // #endregion
     if (this.panel) {
       this.panel.reveal(vscode.ViewColumn.Two);
       return;
@@ -40,26 +37,16 @@ export class ChatPanel {
       }
     );
 
-    // #region agent log
-    logger.debug('[DEBUG] ChatPanel setting HTML');
-    // #endregion
     this.panel.webview.html = this.getWebviewContent(this.panel.webview);
-    // #region agent log
-    logger.debug('[DEBUG] ChatPanel HTML set', {htmlLength: this.panel.webview.html.length});
-    // #endregion
 
     // Handle messages from webview
     this.panel.webview.onDidReceiveMessage(
       async (message) => {
-        // #region agent log
-        logger.debug('[DEBUG] ChatPanel onDidReceiveMessage', {type: message.type});
-        // #endregion
         switch (message.type) {
           case 'sendMessage':
             await this.handleUserMessage(message.text);
             break;
           case 'debug':
-            logger.debug(`[WEBVIEW-PANEL] ${message.message}`);
             break;
         }
       }
@@ -77,18 +64,11 @@ export class ChatPanel {
   }
 
   private async handleUserMessage(text: string): Promise<void> {
-    // #region agent log
-    const logger = Logger.getInstance();
-    logger.debug('[DEBUG] ChatPanel.handleUserMessage', {textLength: text.length});
-    // #endregion
     try {
       // Send to SessionManager
       this.cachedHistory.push({ role: 'user', content: text });
       await this.sessionManager.sendChatMessage(text, await this.gatherContext());
     } catch (error: any) {
-      // #region agent log
-      logger.error('[DEBUG] ChatPanel.handleUserMessage error', {message: (error as any).message});
-      // #endregion
       vscode.window.showErrorMessage(`OpenClaw error: ${error.message}`);
       this.panel?.webview.postMessage({
         type: 'response',
@@ -157,6 +137,36 @@ export class ChatPanel {
         });
         this.activeRuns.delete(runId);
       }
+      return;
+    }
+
+    if (event.type === 'tool_event' && event.phase === 'start') {
+      // Initialize a tool block in the UI
+      const formattedArgs = ToolEventHandler.formatToolArgs(event.args || {});
+      
+      this.panel.webview.postMessage({
+        type: 'tool_start',
+        runId: event.runId,
+        toolCallId: event.toolCallId,
+        toolName: event.toolName,
+        args: formattedArgs
+      });
+      return;
+    }
+    
+    if (event.type === 'tool_event' && event.phase === 'result') {
+      // Update the tool with result
+      const formattedResult = ToolEventHandler.formatToolResult(
+        event.result || '',
+        event.isError || false
+      );
+      
+      this.panel.webview.postMessage({
+        type: 'tool_result',
+        toolCallId: event.toolCallId,
+        result: formattedResult,
+        isError: event.isError || false
+      });
       return;
     }
 
@@ -290,6 +300,9 @@ export class ChatPanel {
           border-radius: 4px;
           cursor: pointer;
         }
+        
+        /* Tool styles */
+        ${ToolEventHandler.getToolStyles()}
       </style>
     </head>
     <body>
@@ -449,6 +462,8 @@ export class ChatPanel {
             input.value = value.substring(0, currentPos) + text + value.substring(input.selectionEnd);
           }
         });
+        
+        ${ToolEventHandler.getToolScripts()}
 
         window.addEventListener('message', (event) => {
           const message = event.data;
@@ -472,6 +487,10 @@ export class ChatPanel {
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
           } else if (message.type === 'assistant_stream_end') {
             activeRuns.delete(message.runId);
+          } else if (message.type === 'tool_start') {
+            handleToolStart(message);
+          } else if (message.type === 'tool_result') {
+            handleToolResult(message);
           }
         });
       </script>

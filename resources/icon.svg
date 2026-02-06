@@ -1,8 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#1e1e1e"/>
-  <circle cx="256" cy="256" r="176" fill="#4a90e2"/>
-  <path d="M160 288c0-53 43-96 96-96s96 43 96 96" fill="none" stroke="#ffffff" stroke-width="32" stroke-linecap="round"/>
-  <circle cx="208" cy="232" r="20" fill="#ffffff"/>
-  <circle cx="304" cy="232" r="20" fill="#ffffff"/>
-  <rect x="176" y="312" width="160" height="24" rx="12" fill="#ffffff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Body segments -->
+  <ellipse cx="12" cy="13" rx="3" ry="4"/>
+  <ellipse cx="12" cy="9" rx="2.5" ry="2"/>
+  
+  <!-- Tail segments -->
+  <path d="M 12 17 Q 12 18.5 11.5 19.5 Q 11 20.5 10 21"/>
+  <path d="M 12 17 Q 12 18.5 12.5 19.5 Q 13 20.5 14 21"/>
+  <path d="M 10.5 18.5 L 9 19.5"/>
+  <path d="M 13.5 18.5 L 15 19.5"/>
+  
+  <!-- Claws -->
+  <path d="M 9.5 11 Q 7 10.5 5.5 10 Q 4 9.5 3 8.5 L 2.5 7.5 Q 2 7 2.5 6.5 Q 3 6 3.5 6.5 L 4 7.5"/>
+  <path d="M 14.5 11 Q 17 10.5 18.5 10 Q 20 9.5 21 8.5 L 21.5 7.5 Q 22 7 21.5 6.5 Q 21 6 20.5 6.5 L 20 7.5"/>
+  
+  <!-- Eyes -->
+  <circle cx="10.5" cy="8.5" r="0.8" fill="currentColor"/>
+  <circle cx="13.5" cy="8.5" r="0.8" fill="currentColor"/>
+  
+  <!-- Antennae -->
+  <path d="M 10.5 7.5 Q 9.5 5 9 3"/>
+  <path d="M 13.5 7.5 Q 14.5 5 15 3"/>
+  
+  <!-- Small legs -->
+  <line x1="10" y1="12" x2="8" y2="13"/>
+  <line x1="10" y1="14" x2="8" y2="15"/>
+  <line x1="14" y1="12" x2="16" y2="13"/>
+  <line x1="14" y1="14" x2="16" y2="15"/>
 </svg>

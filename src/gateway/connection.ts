@@ -182,9 +182,38 @@ export class GatewayConnection extends EventEmitter {
       const rawMessage = data.toString();
       const message = JSON.parse(rawMessage);
       
-      // Log the raw message size to help with debugging
-      this.logger.debug('Received raw message', { length: rawMessage.length });
-      
+      // // Special debug for agent events (where tool calls live)
+      // if (message.type === 'event' && message.event === 'agent') {
+      //   const payload = message.payload;
+      //   const stream = payload?.stream;
+        
+      //   // Extra debug for tool events
+      //   if (stream === 'tool') {
+      //     const data = payload?.data || {};
+      //     this.logger.info('TOOL EVENT RECEIVED!', {
+      //       stream: stream,
+      //       phase: data.phase,
+      //       toolName: data.toolName || data.name || 'unknown',
+      //       toolCallId: data.toolCallId || data.id || 'unknown',
+      //       data_keys: Object.keys(data)
+      //     });
+          
+      //     // Log tool content for debugging
+      //     if (data.content && data.content.length < 500) {
+      //       this.logger.debug('Tool content:', data.content);
+      //     }
+      //   }
+        
+      //   this.logger.debug('AGENT EVENT DETAILS:', {
+      //     stream: stream,
+      //     seq: payload?.seq,
+      //     runId: payload?.runId,
+      //     data_keys: payload?.data ? Object.keys(payload.data) : 'no data',
+      //     data_type: typeof payload?.data,
+      //     data_string: JSON.stringify(payload?.data).substring(0, 200)
+      //   });
+      // }
+
       // Process the message using MessageProcessor
       const processedMessage = this.messageProcessor.processIncomingMessage(message);
       
@@ -247,11 +276,6 @@ export class GatewayConnection extends EventEmitter {
     
     // Log the event type for debugging
     this.logger.debug(`Received event`, { event: eventType, hasPayload: !!message.payload });
-    
-    // Update session key if available
-    if (message.payload && message.payload.sessionKey) {
-      this.logger.debug(`Updated session key: ${message.payload.sessionKey}`);
-    }
     
     // Emit the event for subscribers
     this.emit(eventType, message.payload);

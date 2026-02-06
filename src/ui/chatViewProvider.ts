@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { SessionManager } from '../gateway/sessionManager';
 import { Logger } from '../utils/logger';
+import { ToolEventHandler } from './toolEventHandler';
 
 export class ChatViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'openclaw.chatView';
@@ -23,9 +24,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     ) {
         this._view = webviewView;
         const logger = Logger.getInstance();
-        // #region agent log
-        logger.debug('[DEBUG] resolveWebviewView called', {hasContext: !!context});
-        // #endregion
 
         webviewView.webview.options = {
             enableScripts: true,
@@ -38,18 +36,11 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
         webviewView.webview.onDidReceiveMessage(async (data) => {
-            // #region agent log
-            logger.debug('[DEBUG] onDidReceiveMessage fired', {type: data.type, hasText: !!data.text, dataKeys: Object.keys(data)});
-            // #endregion
             switch (data.type) {
                 case 'sendMessage':
-                    // #region agent log
-                    logger.debug('[DEBUG] Handling sendMessage', {textLength: data.text?.length});
-                    // #endregion
                     await this._handleUserMessage(data.text);
                     break;
                 case 'debug':
-                    logger.debug(`[WEBVIEW] ${data.message}`);
                     break;
             }
         });
@@ -59,42 +50,23 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         });
 
         webviewView.onDidChangeVisibility(() => {
-            // #region agent log
-            logger.debug('[DEBUG] Webview visibility changed', {visible: webviewView.visible});
-            // #endregion
             if (webviewView.visible) {
                 this._restoreHistory();
             }
         });
 
-        // #region agent log
-        logger.debug('[DEBUG] Initial webview visibility', {visible: webviewView.visible});
-        // #endregion
         if (webviewView.visible) {
             this._restoreHistory();
         }
     }
 
     private async _handleUserMessage(text: string) {
-        // #region agent log
-        const logger = Logger.getInstance();
-        logger.debug('[DEBUG] _handleUserMessage entry', {textLength: text.length, hasView: !!this._view});
-        // #endregion
         if (!this._view) return;
 
         try {
             this._cachedHistory.push({ role: 'user', content: text });
-            // #region agent log
-            logger.debug('[DEBUG] Before sendChatMessage');
-            // #endregion
             await this._sessionManager.sendChatMessage(text, await this._gatherContext());
-            // #region agent log
-            logger.debug('[DEBUG] After sendChatMessage success');
-            // #endregion
         } catch (error: any) {
-            // #region agent log
-            logger.error('[DEBUG] sendChatMessage error', {message: error.message, stack: error.stack});
-            // #endregion
             vscode.window.showErrorMessage(`OpenClaw error: ${error.message}`);
             this._view.webview.postMessage({
                 type: 'response',
@@ -163,6 +135,35 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 });
                 this._activeRuns.delete(runId);
             }
+            return;
+        }
+
+        if (event.type === 'tool_event' && event.phase === 'start') {
+            // Initialize a tool block in the UI
+            const formattedArgs = ToolEventHandler.formatToolArgs(event.args || {});
+            
+            this._view.webview.postMessage({
+                type: 'tool_start',
+                runId: event.runId,
+                toolCallId: event.toolCallId,
+                toolName: event.toolName,
+                args: formattedArgs
+            });
+            return;
+        }
+
+        if (event.type === 'tool_event' && event.phase === 'result') {
+            const formattedResult = ToolEventHandler.formatToolResult(
+                event.result || '',
+                event.isError || false
+            );
+            
+            this._view.webview.postMessage({
+                type: 'tool_result',
+                toolCallId: event.toolCallId,
+                result: formattedResult,
+                isError: event.isError || false
+            });
             return;
         }
 
@@ -309,6 +310,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         button:hover {
           background-color: var(--vscode-button-hoverBackground);
         }
+        
+        /* Tool styles */
+        ${ToolEventHandler.getToolStyles()}
       </style>
     </head>
     <body>
@@ -485,6 +489,8 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
           }
         });
 
+        ${ToolEventHandler.getToolScripts()}
+
         window.addEventListener('message', (event) => {
           const message = event.data;
           if (message.type === 'response') {
@@ -507,6 +513,10 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
           } else if (message.type === 'assistant_stream_end') {
             activeRuns.delete(message.runId);
+          } else if (message.type === 'tool_start') {
+            handleToolStart(message);
+          } else if (message.type === 'tool_result') {
+            handleToolResult(message);
           }
         });
       </script>

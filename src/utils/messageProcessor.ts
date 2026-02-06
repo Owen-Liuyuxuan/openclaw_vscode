@@ -80,24 +80,50 @@ export class MessageProcessor {
     private processAgentEvent(message: any): any {
         // Handle agent events - extract the most relevant information
         if (message.payload && message.payload.data) {
-            // For lifecycle events, just return a simplified version
-            if (message.payload.stream === 'lifecycle') {
+            const stream = message.payload.stream;
+            const data = message.payload.data;
+            
+            // For lifecycle events
+            if (stream === 'lifecycle') {
                 return {
                     type: 'agent_lifecycle',
-                    phase: message.payload.data.phase,
+                    phase: data.phase,
                     runId: message.payload.runId,
                     timestamp: message.payload.ts
                 };
             }
             
             // For assistant stream, extract the text
-            if (message.payload.stream === 'assistant' && message.payload.data.text) {
+            if (stream === 'assistant' && data.text) {
                 return {
                     type: 'agent_message',
                     runId: message.payload.runId,
                     seq: message.payload.seq,
-                    text: message.payload.data.text,
-                    delta: message.payload.data.delta || '',
+                    text: data.text,
+                    delta: data.delta || '',
+                    timestamp: message.payload.ts
+                };
+            }
+            
+            // NEW: Handle tool stream events
+            if (stream === 'tool') {
+                // Tool events can have different phases: start, update, result
+                const toolCallId = data.toolCallId;
+                const toolName = data.name;
+                const args = data.args || {}; // Only available in 'start' phase
+                const result = data.result || ''; // Only available in 'result' phase
+                const isError = data.isError || false; // Only in 'result' phase
+                
+                return {
+                    type: 'tool_event',
+                    runId: message.payload.runId,
+                    seq: message.payload.seq,
+                    phase: data.phase || 'unknown',
+                    toolCallId: toolCallId,
+                    toolName: toolName,
+                    args: args,
+                    result: result,
+                    isError: isError,
                     timestamp: message.payload.ts
                 };
             }
@@ -124,19 +150,42 @@ export class MessageProcessor {
             return message;
         }
         
-        if (message.type === 'chat' && message.content) {
-            return message.content;
-        }
-        
-        if (message.type === 'agent_message' && message.text) {
-            return message.text;
-        }
-        
-        // Default to JSON stringify for other message types
-        try {
-            return JSON.stringify(message, null, 2);
-        } catch (error) {
-            return 'Unable to format message for display';
+        // Handle different message types
+        switch (message.type) {
+            case 'chat_message':
+                return message.content || '';
+                
+            case 'agent_message':
+                return message.text || '';
+                
+            case 'tool_event':
+                const toolName = message.toolName || 'Unknown tool';
+                const phase = message.phase || 'unknown';
+                const content = message.content || '';
+                
+                switch (phase) {
+                    case 'start':
+                        return `🔧 ${toolName} started...`;
+                    case 'update':
+                        const truncated = content.length > 100 ? content.substring(0, 100) + '...' : content;
+                        return `⚙️ ${toolName}: ${truncated}`;
+                    case 'end':
+                        const result = content.length > 150 ? content.substring(0, 150) + '...' : content;
+                        return `✓ ${toolName}: ${result}`;
+                    default:
+                        return `🔧 ${toolName} (${phase})`;
+                }
+                
+            case 'agent_lifecycle':
+                return `⚙️ ${message.phase || 'Lifecycle event'}`;
+                
+            default:
+                // Default to JSON stringify for other message types
+                try {
+                    return JSON.stringify(message, null, 2);
+                } catch (error) {
+                    return 'Unable to format message for display';
+                }
         }
     }
 }
