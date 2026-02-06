@@ -1,6 +1,15 @@
 # OpenClaw VSCode Extension
 
-AI-powered coding assistant integration for OpenClaw. This extension connects VSCode to your local OpenClaw Gateway service via WebSocket.
+<div align="center">
+  <img src="resources/readme_slogan.png" width="800"/>
+   <div>&nbsp;</div>
+   <a link=https://github.com/Owen-Liuyuxuan/openclaw_vscode/releases/tag/v0.2.0>
+   VSCode assistant integration for OpenClaw. 
+   </a>
+   <div>&nbsp;</div>
+</div>
+
+[Video](https://github.com/Owen-Liuyuxuan/openclaw_vscode/releases/tag/v0.2.0)
 
 ## Features
 
