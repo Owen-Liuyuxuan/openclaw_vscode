@@ -1,15 +1,8 @@
-# OpenClaw VSCode Extension
+# [OpenClaw VSCode Extension](https://github.com/Owen-Liuyuxuan/openclaw_vscode/releases/tag/v0.2.0)
 
 <div align="center">
   <img src="resources/readme_slogan.png" width="800"/>
-   <div>&nbsp;</div>
-   <a link=https://github.com/Owen-Liuyuxuan/openclaw_vscode/releases/tag/v0.2.0>
-   VSCode assistant integration for OpenClaw. 
-   </a>
-   <div>&nbsp;</div>
 </div>
-
-[Video](https://github.com/Owen-Liuyuxuan/openclaw_vscode/releases/tag/v0.2.0)
 
 ## Features
 
