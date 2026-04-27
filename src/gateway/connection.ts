@@ -161,6 +161,8 @@ export class GatewayConnection extends EventEmitter {
           platform: os.platform(),
           mode: 'cli'  // Changed from 'vscode-extension' to 'cli'
         },
+        role: "operator",
+        scopes: ["operator.read", "operator.write"],
         auth: {
           token: this.authToken
         }
