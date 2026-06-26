@@ -2,6 +2,7 @@
 .git
 .gitignore
 .agents
+.cursor
 node_modules
 !node_modules/markdown-it/**
 !node_modules/markdown-it/dist/**
