@@ -153,15 +153,14 @@ export class GatewayConnection extends EventEmitter {
       // Send connect request with the correct protocol format
       // The client.mode MUST be "cli" according to the error message
       const response = await this.sendRequest('connect', {
-        minProtocol: 3,
-        maxProtocol: 3,
+        minProtocol: 4,
+        maxProtocol: 4,
         client: {
-          id: 'cli',
+          id: 'gateway-client',
           version: '1.0.0',
           platform: os.platform(),
-          mode: 'cli'  // Changed from 'vscode-extension' to 'cli'
+          mode: 'backend'  // Changed from 'vscode-extension' to 'cli' then to 'backend'
         },
-        role: "operator",
         scopes: ["operator.read", "operator.write"],
         auth: {
           token: this.authToken
