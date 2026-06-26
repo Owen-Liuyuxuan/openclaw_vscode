@@ -150,8 +150,18 @@ export class GatewayConnection extends EventEmitter {
       // Get VSCode version for client info
       const vscodeVersion = vscode.version || '1.0.0';
       
-      // Send connect request with the correct protocol format
-      // The client.mode MUST be "cli" according to the error message
+      // Gateway handshake params for OpenClaw 2026.5.x+ (protocol v4).
+      //
+      // Protocol: OpenClaw 2026.5.x+ gateways require v4; older v3-only gateways
+      // reject min/max 4. The official client negotiates minProtocol 3 and
+      // maxProtocol 4 for backward compatibility; this extension pins 4/4 because
+      // it targets current gateways only (see openclaw_vscode#5).
+      //
+      // Client identity: id "gateway-client" + mode "backend" matches OpenClaw's
+      // reference client. Using id "cli" / mode "cli" can trigger "device identity
+      // required" when connecting with a gateway token alone.
+      //
+      // role defaults to "operator" on the server when omitted.
       const response = await this.sendRequest('connect', {
         minProtocol: 4,
         maxProtocol: 4,
@@ -159,7 +169,7 @@ export class GatewayConnection extends EventEmitter {
           id: 'gateway-client',
           version: '1.0.0',
           platform: os.platform(),
-          mode: 'backend'  // Changed from 'vscode-extension' to 'cli' then to 'backend'
+          mode: 'backend',
         },
         scopes: ["operator.read", "operator.write"],
         auth: {
