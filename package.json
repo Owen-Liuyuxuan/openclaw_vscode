@@ -2,7 +2,7 @@
   "name": "openclaw-vscode",
   "displayName": "OpenClaw-VSCode",
   "description": "AI-powered coding assistant integration for OpenClaw",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "OwenLiuyuxuan",
   "icon": "resources/icon.png",
   "engines": {
